@@ -1,699 +1,614 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence, animate, useInView } from 'framer-motion';
 import { 
-  Menu, X, Phone, Mail, MapPin, ChevronRight, Star, 
-  Settings, Wrench, Zap, Droplets, Wind, Cpu, 
-  Award, Users, Briefcase, GraduationCap, ArrowRight,
-  CheckCircle2, PlayCircle, ChevronDown, MessageSquare
+  Menu, X, Phone, Mail, MapPin, ChevronRight, CheckCircle2, 
+  Wrench, Zap, Snowflake, Droplets, ThermometerSun, MonitorPlay, 
+  Users, Award, Briefcase, Star, Clock, ArrowRight, Play, Quote,
+  ChevronDown, MessageCircle,
+  GraduationCap, TrendingUp, ShieldCheck
 } from 'lucide-react';
 
-// --- DATA MOCKS ---
+// --- Constants & Theme ---
+const THEME = {
+  blue: '#0B1F4D',
+  gold: '#F8B400',
+  navy: '#051024',
+};
 
-const COURSES = [
-  { id: 1, title: 'AC Repairing Masterclass', duration: '3 Months', fees: '₹15,000', icon: Wind, img: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=800' },
-  { id: 2, title: 'Refrigerator Repair', duration: '2 Months', fees: '₹12,000', icon: Droplets, img: 'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&q=80&w=800' },
-  { id: 3, title: 'Washing Machine Tech', duration: '2 Months', fees: '₹10,000', icon: Settings, img: 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&q=80&w=800' },
-  { id: 4, title: 'Microwave & Appliances', duration: '1.5 Months', fees: '₹8,000', icon: Zap, img: 'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?auto=format&fit=crop&q=80&w=800' },
-  { id: 5, title: 'RO Water Purifier', duration: '1 Month', fees: '₹6,000', icon: Droplets, img: 'https://images.unsplash.com/photo-1585771761921-22e3792c23bc?auto=format&fit=crop&q=80&w=800' },
-  { id: 6, title: 'Advanced PCB Repair', duration: '4 Months', fees: '₹25,000', icon: Cpu, img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800' },
+// --- Mock Data ---
+const STATS = [
+  { label: 'Students Trained', value: '10,000+', icon: <Users size={24} /> },
+  { label: 'Professional Courses', value: '15+', icon: <Award size={24} /> },
+  { label: 'Practical Classes', value: '100%', icon: <Wrench size={24} /> },
+  { label: 'Placements', value: '5000+', icon: <Briefcase size={24} /> },
 ];
 
 const FEATURES = [
-  { title: 'Experienced Trainers', desc: 'Learn from industry veterans with 15+ years experience.', icon: Users },
-  { title: '100% Practical Labs', desc: 'Hands-on training with modern, real-world equipment.', icon: Wrench },
-  { title: 'Placement Assistance', desc: 'Dedicated cell for interviews with top companies.', icon: Briefcase },
-  { title: 'Govt. Recognized', desc: 'Valid certification to boost your career globally.', icon: Award },
+  { title: 'Experienced Trainers', desc: 'Learn from industry veterans with 10+ years of hands-on experience.', icon: <Award className="text-[#F8B400]" size={32} /> },
+  { title: 'Practical Workshop', desc: 'State-of-the-art labs equipped with the latest appliances for real-world practice.', icon: <Wrench className="text-[#F8B400]" size={32} /> },
+  { title: 'Job Assistance', desc: 'Dedicated placement cell ensuring you get hired by top companies.', icon: <Briefcase className="text-[#F8B400]" size={32} /> },
+  { title: 'Government Cert.', desc: 'Recognized certification that adds significant value to your resume.', icon: <ShieldCheck className="text-[#F8B400]" size={32} /> },
+  { title: 'Affordable Fees', desc: 'Premium education made accessible with flexible payment options.', icon: <TrendingUp className="text-[#F8B400]" size={32} /> },
+  { title: 'Live Projects', desc: 'Work on real customer appliances to build confidence before you graduate.', icon: <MonitorPlay className="text-[#F8B400]" size={32} /> },
 ];
 
-const FAQS = [
-  { q: "What is the minimum qualification required?", a: "Most of our courses require a minimum of 10th or 12th pass. However, dedication to learn is the primary requirement." },
-  { q: "Do you provide placement guarantee?", a: "We provide 100% placement assistance. We have tie-ups with 50+ service centers and corporate brands that regularly hire our students." },
-  { q: "Are the classes available in Hindi/English?", a: "Yes, our instructors teach in a mix of Hindi and English to ensure every student understands the practical concepts perfectly." },
-  { q: "Do you provide hostel facility?", a: "Yes, we can assist outstation students in finding affordable PG and hostel accommodations near the institute." }
+const COURSES = [
+  { id: 1, title: 'Advanced AC Repairing', duration: '3 Months', fee: '₹15,000', icon: <Snowflake size={24}/>, img: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=800' },
+  { id: 2, title: 'Refrigerator Expert', duration: '2 Months', fee: '₹12,000', icon: <ThermometerSun size={24}/>, img: 'https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?auto=format&fit=crop&q=80&w=800' },
+  { id: 3, title: 'Washing Machine Master', duration: '2 Months', fee: '₹10,000', icon: <Droplets size={24}/>, img: 'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&q=80&w=800' },
+  { id: 4, title: 'Microwave & Oven', duration: '1 Month', fee: '₹6,000', icon: <Zap size={24}/>, img: 'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?auto=format&fit=crop&q=80&w=800' },
+  { id: 5, title: 'RO Water Purifier', duration: '1 Month', fee: '₹5,000', icon: <Droplets size={24}/>, img: 'https://images.unsplash.com/photo-1570519390250-b0c036d000ce?auto=format&fit=crop&q=80&w=800' },
+  { id: 6, title: 'Electronics & PCB', duration: '4 Months', fee: '₹20,000', icon: <MonitorPlay size={24}/>, img: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800' },
 ];
 
 const TESTIMONIALS = [
-  { name: 'Rahul Sharma', role: 'AC Technician at LG', text: 'The practical training at Kartik Enterprises changed my life. I got placed immediately after completing my 3-month AC repair course.', img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200' },
-  { name: 'Amit Kumar', role: 'Self Employed', text: 'The PCB repair course is top-notch. The trainers explain complex electronics very simply. I now run my own successful repair shop.', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200' },
-  { name: 'Vikas Singh', role: 'Service Engineer', text: 'Best institute in the city for appliance repair. The infrastructure and tools provided during training are exactly what we use in the field.', img: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=200' },
+  { id: 1, name: 'Rahul Sharma', role: 'Placed at LG Electronics', text: 'The practical training here is unmatched. I got hands-on experience which helped me clear my technical interview easily. Highly recommend Kartik Enterprises!', img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200' },
+  { id: 2, name: 'Amit Kumar', role: 'Independent Business Owner', text: 'Started my own repair shop after completing the AC & Fridge course. The trainers are supportive even after the course ends. Best investment in my career.', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200' },
+  { id: 3, name: 'Sneha Gupta', role: 'Placed at Samsung', text: 'I was hesitant initially, but the PCB repair course is structured perfectly from basics to advanced. The placement assistance is genuine and very helpful.', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200' },
 ];
 
-// --- REUSABLE COMPONENTS ---
+const FAQS = [
+  { q: 'Is there any minimum qualification required?', a: 'We recommend a minimum of 10th pass, but passion and eagerness to learn matter most. Our courses are designed from scratch.' },
+  { q: 'Do you provide 100% job placement?', a: 'We provide 100% placement assistance. We have tie-ups with top brands and local service centers. Meritorious students usually get placed before the course ends.' },
+  { q: 'Can I pay fees in installments?', a: 'Yes, we offer flexible EMI and installment options to make our premium education affordable for everyone.' },
+  { q: 'Is the certificate recognized?', a: 'Yes, our institute is ISO certified and our training certificates are recognized industry-wide by all major electronic brands.' },
+];
 
-const FadeIn = ({ children, delay = 0, className = "" }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 30 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-100px" }}
-    transition={{ duration: 0.7, delay, ease: "easeOut" }}
-    className={className}
-  >
-    {children}
-  </motion.div>
-);
+const GALLERY = [
+  'https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&q=80&w=600',
+  'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&q=80&w=600',
+  'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=600',
+  'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&q=80&w=600',
+  'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&q=80&w=600',
+  'https://images.unsplash.com/photo-1574169208507-84376144848b?auto=format&fit=crop&q=80&w=600',
+];
 
-const SectionHeading = ({ title, subtitle, light = false }) => (
-  <div className="text-center mb-16">
-    <motion.h2 
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className={`text-3xl md:text-5xl font-bold mb-4 ${light ? 'text-white' : 'text-[#0B1F4D]'}`}
-    >
-      {title}
-    </motion.h2>
-    <motion.div 
-      initial={{ width: 0 }}
-      whileInView={{ width: '80px' }}
-      viewport={{ once: true }}
-      className="h-1 bg-[#F8B400] mx-auto mb-6 rounded-full"
-    />
-    <motion.p 
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
-      transition={{ delay: 0.2 }}
-      className={`max-w-2xl mx-auto text-lg ${light ? 'text-gray-300' : 'text-gray-600'}`}
-    >
-      {subtitle}
-    </motion.p>
-  </div>
-);
+// --- Components ---
 
-const AnimatedNumber = ({ value, suffix = "", prefix = "", decimals = 0 }) => {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-50px" });
+const Navbar = ({ scrolled }) => {
+  const [isOpen, setIsOpen] = useState(false);
 
-  useEffect(() => {
-    if (inView) {
-      const controls = animate(0, value, {
-        duration: 2.5,
-        ease: "easeOut",
-        onUpdate(v) {
-          if (ref.current) {
-            let formatted = decimals > 0 
-              ? v.toFixed(decimals) 
-              : Math.round(v).toLocaleString('en-IN');
-            ref.current.textContent = `${prefix}${formatted}${suffix}`;
-          }
-        },
-      });
-      return () => controls.stop();
-    }
-  }, [value, inView, prefix, suffix, decimals]);
-
-  return <span ref={ref}>{prefix}0{suffix}</span>;
-};
-
-// --- MAIN APP COMPONENT ---
-
-export default function App() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [activeFaq, setActiveFaq] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  const navLinks = ['Home', 'About', 'Courses', 'Placement', 'Gallery', 'Contact'];
 
   return (
-    <div className="font-sans text-gray-800 bg-slate-50 selection:bg-[#F8B400] selection:text-[#0B1F4D]">
-      
-      {/* NAVBAR */}
-      <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled || mobileMenuOpen ? 'bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-100 py-3' : 'bg-transparent py-5'}`}>
-        <div className="container mx-auto px-4 md:px-8 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#0B1F4D] to-blue-800 flex items-center justify-center shadow-lg">
-              <Wrench className="text-[#F8B400] w-6 h-6" />
+    <nav className={`fixed w-full z-50 transition-all duration-500 ${scrolled ? 'bg-[#0B1F4D]/95 backdrop-blur-md shadow-xl py-3' : 'bg-transparent py-5'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center">
+          {/* Logo */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-[#F8B400] flex items-center justify-center shadow-lg shadow-[#F8B400]/20">
+              <Wrench size={24} className="text-[#0B1F4D]" />
             </div>
-            <span className={`font-bold text-xl md:text-2xl tracking-tight ${isScrolled || mobileMenuOpen ? 'text-[#0B1F4D]' : 'text-white'}`}>
-              Kartik <span className="text-[#F8B400]">Enterprises</span>
-            </span>
+            <div>
+              <h1 className="text-xl font-bold text-white tracking-tight leading-tight">KARTIK</h1>
+              <p className="text-[10px] text-[#F8B400] font-semibold tracking-widest uppercase">Institute</p>
+            </div>
           </div>
 
-          {/* Desktop Menu */}
-          <div className="hidden lg:flex items-center gap-8">
-            {['Home', 'About', 'Courses', 'Placement', 'Gallery', 'Contact'].map((item) => (
-              <a key={item} href={`#${item.toLowerCase()}`} className={`relative group font-medium transition-colors ${isScrolled || mobileMenuOpen ? 'text-[#0B1F4D] hover:text-[#F8B400]' : 'text-gray-100 hover:text-white'}`}>
-                {item}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#F8B400] transition-all duration-300 group-hover:w-full"></span>
+          {/* Desktop Nav */}
+          <div className="hidden md:flex items-center space-x-8">
+            {navLinks.map((link) => (
+              <a key={link} href={`#${link.toLowerCase()}`} className="text-sm font-medium text-gray-200 hover:text-[#F8B400] transition-colors relative group">
+                {link}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#F8B400] transition-all group-hover:w-full"></span>
               </a>
             ))}
-            <button className="bg-[#F8B400] text-[#0B1F4D] px-6 py-2.5 rounded-full font-bold hover:bg-yellow-400 hover:shadow-lg hover:shadow-yellow-500/30 transition-all transform hover:-translate-y-0.5">
+            <button className="bg-[#F8B400] text-[#0B1F4D] px-6 py-2 rounded-full font-bold text-sm hover:bg-white hover:shadow-[0_0_15px_rgba(248,180,0,0.5)] transition-all duration-300 transform hover:-translate-y-0.5">
               Apply Now
             </button>
           </div>
 
-          {/* Mobile Toggle */}
-          <button 
-            className="lg:hidden relative z-50 p-2 rounded-full bg-black/5 hover:bg-black/10 transition-colors" 
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X size={24} className="text-[#0B1F4D]" /> : <Menu size={24} className={isScrolled ? 'text-[#0B1F4D]' : 'text-white'} />}
-          </button>
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center">
+            <button onClick={() => setIsOpen(!isOpen)} className="text-white hover:text-[#F8B400]">
+              {isOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+          </div>
         </div>
-      </nav>
+      </div>
 
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, y: "-100%" }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: "-100%" }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed inset-0 z-40 bg-white pt-24 px-6 pb-8 lg:hidden flex flex-col justify-between overflow-y-auto"
-          >
-            <div className="flex flex-col gap-2 mt-4">
-              {['Home', 'About', 'Courses', 'Placement', 'Gallery', 'Contact'].map((item, index) => (
-                <motion.a 
-                  key={item} 
-                  href={`#${item.toLowerCase()}`} 
-                  onClick={() => setMobileMenuOpen(false)} 
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 + (index * 0.05), duration: 0.3 }}
-                  className="text-3xl font-bold text-[#0B1F4D] py-4 border-b border-gray-100 hover:text-[#F8B400] hover:pl-4 transition-all"
-                >
-                  {item}
-                </motion.a>
-              ))}
-            </div>
-            
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="mt-8 space-y-4"
-            >
-              <div className="flex items-center gap-4 text-gray-600 mb-6">
-                <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-[#0B1F4D]">
-                  <Phone size={18} />
-                </div>
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider">Call Us</p>
-                  <p className="font-bold text-[#0B1F4D]">+91 98765 43210</p>
-                </div>
-              </div>
-              <button className="w-full bg-[#F8B400] text-[#0B1F4D] px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-yellow-500/20 active:scale-95 transition-transform">
-                Apply Now
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Mobile Nav */}
+      {isOpen && (
+        <div className="md:hidden absolute top-full left-0 w-full bg-[#0B1F4D]/95 backdrop-blur-xl border-t border-white/10 shadow-2xl">
+          <div className="px-4 pt-2 pb-6 space-y-2">
+            {navLinks.map((link) => (
+              <a 
+                key={link} 
+                href={`#${link.toLowerCase()}`} 
+                onClick={() => setIsOpen(false)}
+                className="block px-3 py-3 text-base font-medium text-white border-b border-white/5 hover:text-[#F8B400] hover:bg-white/5 rounded-md"
+              >
+                {link}
+              </a>
+            ))}
+            <button className="w-full mt-4 bg-[#F8B400] text-[#0B1F4D] px-6 py-3 rounded-xl font-bold text-base shadow-lg">
+              Apply Now
+            </button>
+          </div>
+        </div>
+      )}
+    </nav>
+  );
+};
 
-      {/* HERO SECTION */}
-      <section id="home" className="relative min-h-screen flex items-center pt-20 overflow-hidden">
-        {/* Background Image & Overlay */}
+const SectionHeading = ({ subtitle, title, light = false }) => (
+  <div className="text-center mb-16 relative z-10">
+    <span className={`inline-block py-1 px-3 rounded-full text-xs font-bold tracking-wider uppercase mb-4 border ${light ? 'border-[#F8B400] text-[#F8B400]' : 'border-[#0B1F4D]/20 text-[#0B1F4D] bg-[#0B1F4D]/5'}`}>
+      {subtitle}
+    </span>
+    <h2 className={`text-4xl md:text-5xl font-extrabold tracking-tight ${light ? 'text-white' : 'text-[#0B1F4D]'}`}>
+      {title}
+    </h2>
+    <div className="w-24 h-1.5 bg-[#F8B400] mx-auto mt-6 rounded-full"></div>
+  </div>
+);
+
+export default function App() {
+  const [scrolled, setScrolled] = useState(false);
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [openFaq, setOpenFaq] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Auto-advance testimonials
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveTestimonial((prev) => (prev + 1) % TESTIMONIALS.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="min-h-screen font-sans bg-gray-50 text-gray-800 selection:bg-[#F8B400] selection:text-[#0B1F4D]">
+      <Navbar scrolled={scrolled} />
+
+      {/* Hero Section */}
+      <section id="home" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden bg-[#051024]">
+        {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&q=80&w=2070" 
-            alt="Technical Training" 
-            className="w-full h-full object-cover"
+            src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
+            alt="AC Repair Workshop" 
+            className="w-full h-full object-cover opacity-40"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0B1F4D]/95 via-[#0B1F4D]/80 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0B1F4D]/90 via-[#0B1F4D]/70 to-transparent"></div>
         </div>
 
-        <div className="container mx-auto px-4 md:px-8 relative z-10 grid lg:grid-cols-2 gap-12 items-center mt-10">
-          <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-white"
-          >
-            <span className="inline-block py-1 px-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[#F8B400] font-medium mb-6">
-              #1 Repairing Institute in India
-            </span>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
-              Build Your Career With <span className="text-[#F8B400]">Professional</span> Repair Training
+        {/* Animated Background Shapes */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+           <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#F8B400] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+           <div className="absolute top-40 -left-20 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-1000"></div>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-6 border-l-4 border-l-[#F8B400]">
+              <Star size={16} className="text-[#F8B400]" />
+              <span className="text-white text-sm font-medium">India's Premium Repair Institute</span>
+            </div>
+            
+            <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-[1.1] mb-6">
+              Build Your Career With <span className="text-[#F8B400] relative whitespace-nowrap">Professional<svg className="absolute w-full h-3 -bottom-1 left-0 text-[#F8B400]/30" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="transparent"/></svg></span> Repair Training
             </h1>
-            <p className="text-lg md:text-xl text-gray-300 mb-8 max-w-lg leading-relaxed">
-              100% Practical Training • Government Recognized Certificate • Assured Placement Assistance
+            
+            <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl leading-relaxed">
+              Master the skills of repairing ACs, Refrigerators, Washing Machines, and PCBs with 100% practical training and assured placement assistance.
             </p>
             
-            <div className="flex flex-wrap gap-4">
-              <button className="bg-[#F8B400] text-[#0B1F4D] px-8 py-4 rounded-lg font-bold text-lg hover:bg-yellow-400 hover:shadow-xl hover:shadow-[#F8B400]/20 transition-all flex items-center gap-2">
-                Start Your Journey <ArrowRight size={20} />
+            <div className="flex flex-wrap items-center gap-4">
+              <button className="bg-[#F8B400] text-[#0B1F4D] px-8 py-4 rounded-xl font-bold text-lg hover:bg-white hover:shadow-[0_0_30px_rgba(248,180,0,0.4)] transition-all duration-300 transform hover:-translate-y-1 flex items-center gap-2">
+                Apply Now <ArrowRight size={20} />
               </button>
-              <button className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white/20 transition-all flex items-center gap-2">
-                <PlayCircle size={20} /> Watch Demo
+              <button className="bg-white/10 text-white border border-white/20 px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/20 backdrop-blur-sm transition-all duration-300 flex items-center gap-2">
+                <Play size={20} className="text-[#F8B400]" fill="currentColor" /> Watch Demo
               </button>
             </div>
-          </motion.div>
-
-          {/* Floating Stats */}
-          <div className="hidden lg:grid grid-cols-2 gap-6 relative">
-            {[
-              { num: 10000, suffix: '+', text: 'Students Trained', icon: Users, color: 'text-blue-500', delay: 0.2 },
-              { num: 15, suffix: '+', text: 'Expert Courses', icon: Award, color: 'text-[#F8B400]', delay: 0.4 },
-              { num: 100, suffix: '%', text: 'Practical Classes', icon: Wrench, color: 'text-green-500', delay: 0.6 },
-              { num: 5000, suffix: '+', text: 'Placements', icon: Briefcase, color: 'text-purple-500', delay: 0.8 },
-            ].map((stat, idx) => (
-              <motion.div 
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: stat.delay }}
-                className={`bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-2xl shadow-2xl ${idx % 2 !== 0 ? 'mt-12' : ''}`}
-              >
-                <stat.icon className={`w-10 h-10 ${stat.color} mb-4`} />
-                <h3 className="text-3xl font-bold text-white mb-1">
-                  <AnimatedNumber value={stat.num} suffix={stat.suffix} />
-                </h3>
-                <p className="text-gray-300 font-medium">{stat.text}</p>
-              </motion.div>
-            ))}
           </div>
         </div>
 
-        {/* Scroll Indicator */}
-        <motion.div 
-          animate={{ y: [0, 10, 0] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/50"
-        >
-          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center p-1">
-            <div className="w-1.5 h-3 bg-[#F8B400] rounded-full"></div>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* WHY CHOOSE US */}
-      <section id="about" className="py-24 bg-white relative">
-        <div className="container mx-auto px-4 md:px-8">
-          <SectionHeading 
-            title="Why Choose Kartik Enterprises?" 
-            subtitle="We provide industry-leading infrastructure and practical knowledge to make you job-ready from day one."
-          />
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {FEATURES.map((feat, idx) => (
-              <FadeIn key={idx} delay={idx * 0.1}>
-                <div className="group p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-2xl hover:shadow-blue-900/5 transition-all duration-300 h-full">
-                  <div className="w-14 h-14 rounded-xl bg-blue-100 text-[#0B1F4D] flex items-center justify-center mb-6 group-hover:bg-[#0B1F4D] group-hover:text-[#F8B400] transition-colors">
-                    <feat.icon size={28} />
-                  </div>
-                  <h3 className="text-xl font-bold mb-3 text-gray-900">{feat.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{feat.desc}</p>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* POPULAR COURSES */}
-      <section id="courses" className="py-24 bg-slate-50">
-        <div className="container mx-auto px-4 md:px-8">
-          <SectionHeading 
-            title="Our Premium Courses" 
-            subtitle="Master highly demanded technical skills with our comprehensive, hands-on training modules."
-          />
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {COURSES.map((course, idx) => (
-              <FadeIn key={course.id} delay={idx * 0.1}>
-                <div className="bg-white rounded-2xl overflow-hidden shadow-lg border border-gray-100 hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group">
-                  <div className="relative h-64 overflow-hidden">
-                    <div className="absolute inset-0 bg-[#0B1F4D]/20 group-hover:bg-transparent transition-colors z-10"></div>
-                    <img src={course.img} alt={course.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                    <div className="absolute top-4 right-4 z-20 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold text-[#0B1F4D] flex items-center gap-1 shadow-sm">
-                      <Award size={14} className="text-[#F8B400]" /> Best Seller
-                    </div>
-                  </div>
-                  
-                  <div className="p-8">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">{course.title}</h3>
-                    
-                    <div className="flex justify-between items-center mb-6 text-sm">
-                      <div className="flex items-center gap-2 text-gray-600 font-medium">
-                        <div className="p-2 bg-blue-50 rounded-lg text-[#0B1F4D]"><course.icon size={18} /></div>
-                        {course.duration}
-                      </div>
-                      <div className="text-lg font-bold text-[#0B1F4D] bg-yellow-50 px-3 py-1 rounded-lg">
-                        {course.fees}
-                      </div>
-                    </div>
-
-                    <div className="border-t border-gray-100 pt-6 flex gap-4">
-                      <button className="flex-1 bg-[#0B1F4D] text-white py-3 rounded-xl font-semibold hover:bg-blue-900 transition-colors">
-                        Syllabus
-                      </button>
-                      <button className="flex-1 bg-[#F8B400] text-[#0B1F4D] py-3 rounded-xl font-semibold hover:bg-yellow-400 transition-colors">
-                        Enroll Now
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-          
-          <div className="text-center mt-12">
-            <button className="inline-flex items-center gap-2 text-[#0B1F4D] font-bold hover:text-blue-700">
-              View All Courses <ChevronRight size={20} />
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* ADMISSION PROCESS (Timeline) */}
-      <section className="py-24 bg-[#0B1F4D] text-white overflow-hidden">
-        <div className="container mx-auto px-4 md:px-8">
-          <SectionHeading 
-            title="Simple Admission Process" 
-            subtitle="Start your journey towards a professional career in 4 simple steps."
-            light={true}
-          />
-
-          <div className="max-w-4xl mx-auto relative mt-16">
-            {/* Center Line */}
-            <div className="absolute left-[20px] md:left-1/2 top-0 bottom-0 w-1 bg-white/10 md:-translate-x-1/2 rounded-full"></div>
-
-            {[
-              { step: '01', title: 'Counseling & Demo', desc: 'Visit our center or call us for free career counseling and a live demo class.' },
-              { step: '02', title: 'Enrollment', desc: 'Fill the application form and complete the admission process with flexible payment options.' },
-              { step: '03', title: 'Practical Training', desc: 'Attend daily theory and 100% practical classes on live projects and modern machines.' },
-              { step: '04', title: 'Certification & Job', desc: 'Get your Govt. recognized certificate and face interviews arranged by our placement cell.' },
-            ].map((item, idx) => (
-              <FadeIn key={idx} delay={idx * 0.2} className={`relative flex items-center mb-12 ${idx % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
-                {/* Dot */}
-                <div className="absolute left-[20px] md:left-1/2 w-10 h-10 bg-[#F8B400] border-4 border-[#0B1F4D] rounded-full -translate-x-1/2 flex items-center justify-center font-bold text-[#0B1F4D] z-10 shadow-lg">
-                  {item.step}
-                </div>
-                
-                {/* Content */}
-                <div className={`ml-16 md:ml-0 md:w-1/2 p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl ${idx % 2 === 0 ? 'md:mr-12' : 'md:ml-12'}`}>
-                  <h4 className="text-xl font-bold mb-2 text-[#F8B400]">{item.title}</h4>
-                  <p className="text-gray-300">{item.desc}</p>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PLACEMENTS */}
-      <section id="placement" className="py-24 bg-white">
-        <div className="container mx-auto px-4 md:px-8 text-center">
-          <SectionHeading 
-            title="Our Star Performers" 
-            subtitle="Our students are working with top brands across the country."
-          />
-          
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-60 grayscale hover:grayscale-0 transition-all duration-500 mb-20">
-             {/* Simulated Logos */}
-            <div className="text-3xl font-black font-serif tracking-tighter">SAMSUNG</div>
-            <div className="text-3xl font-black tracking-widest text-blue-600">LG</div>
-            <div className="text-3xl font-black italic">Whirlpool</div>
-            <div className="text-3xl font-bold uppercase tracking-widest text-red-600">Voltas</div>
-            <div className="text-3xl font-bold uppercase tracking-wider text-blue-800">Panasonic</div>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { label: 'Highest Package', value: 4.5, prefix: '₹', suffix: ' LPA', decimals: 1 },
-              { label: 'Average Package', value: 2.8, prefix: '₹', suffix: ' LPA', decimals: 1 },
-              { label: 'Placement Rate', value: 100, prefix: '', suffix: '%', decimals: 0 },
-            ].map((stat, idx) => (
-              <FadeIn key={idx} delay={idx * 0.1}>
-                <div className="p-8 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200">
-                  <div className="text-4xl font-bold text-[#0B1F4D] mb-2">
-                    <AnimatedNumber value={stat.value} prefix={stat.prefix} suffix={stat.suffix} decimals={stat.decimals} />
-                  </div>
-                  <div className="text-gray-600 font-medium uppercase tracking-wider text-sm">{stat.label}</div>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* TESTIMONIALS */}
-      <section className="py-24 bg-slate-50 overflow-hidden">
-        <div className="container mx-auto px-4 md:px-8">
-          <SectionHeading 
-            title="Student Success Stories" 
-            subtitle="Don't just take our word for it. Hear what our successful alumni have to say."
-          />
-
-          <div className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-6 pb-10 pt-4 -mx-4 px-4 md:mx-0 md:px-0">
-            {TESTIMONIALS.map((test, idx) => (
-              <div key={idx} className="min-w-[300px] md:min-w-[400px] snap-center bg-white p-8 rounded-3xl shadow-xl shadow-blue-900/5 relative mt-8">
-                <div className="absolute -top-10 left-8">
-                  <img src={test.img} alt={test.name} className="w-20 h-20 rounded-full border-4 border-white shadow-lg object-cover" />
-                </div>
-                <div className="pt-8">
-                  <div className="flex gap-1 text-[#F8B400] mb-4">
-                    {[...Array(5)].map((_, i) => <Star key={i} size={18} fill="currentColor" />)}
-                  </div>
-                  <p className="text-gray-600 italic mb-6">"{test.text}"</p>
-                  <div>
-                    <h4 className="font-bold text-[#0B1F4D]">{test.name}</h4>
-                    <p className="text-sm text-gray-500">{test.role}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* GALLERY (Masonry Concept) */}
-      <section id="gallery" className="py-24 bg-white">
-        <div className="container mx-auto px-4 md:px-8">
-          <SectionHeading title="Institute Gallery" subtitle="A glimpse into our modern classrooms and fully equipped practical workshops." />
-          
-          <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
-            {[
-              "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&q=80&w=600",
-              "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=600",
-              "https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80&w=600",
-              "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=600",
-              "https://images.unsplash.com/photo-1581092335397-9583eb92d232?auto=format&fit=crop&q=80&w=600",
-            ].map((img, idx) => (
-              <FadeIn key={idx} delay={idx * 0.1}>
-                <div className="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition-all">
-                  <img src={img} alt="Gallery" className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-[#0B1F4D]/0 group-hover:bg-[#0B1F4D]/40 transition-colors duration-300 flex items-center justify-center">
-                    <span className="opacity-0 group-hover:opacity-100 text-white font-medium bg-white/20 backdrop-blur-md px-4 py-2 rounded-lg transition-opacity duration-300">View Larger</span>
-                  </div>
-                </div>
-              </FadeIn>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CONTACT & FORM */}
-      <section id="contact" className="py-24 bg-slate-50 relative overflow-hidden">
-        {/* Background blobs */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-200/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-yellow-200/50 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
-
-        <div className="container mx-auto px-4 md:px-8 relative z-10">
-          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row border border-slate-100">
-            
-            {/* Contact Info */}
-            <div className="lg:w-2/5 bg-[#0B1F4D] p-10 md:p-16 text-white relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-              
-              <h3 className="text-3xl font-bold mb-8">Get In Touch</h3>
-              <p className="text-gray-300 mb-12">Have questions about our courses? Our counselors are ready to help you plan your career.</p>
-              
-              <div className="space-y-8">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                    <Phone className="text-[#F8B400]" size={20} />
+        {/* Floating Stats Bar */}
+        <div className="absolute bottom-0 left-0 w-full z-20 translate-y-1/2 hidden md:block">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="bg-white rounded-2xl shadow-2xl shadow-blue-900/10 p-6 md:p-8 flex justify-between items-center border border-gray-100">
+              {STATS.map((stat, idx) => (
+                <div key={idx} className="flex items-center gap-4 px-4 w-1/4 border-r last:border-0 border-gray-100">
+                  <div className="w-14 h-14 rounded-full bg-[#0B1F4D]/5 flex items-center justify-center text-[#F8B400]">
+                    {stat.icon}
                   </div>
                   <div>
-                    <h5 className="font-semibold text-gray-300 text-sm">Call Us Directly</h5>
-                    <p className="text-xl font-bold">+91 98765 43210</p>
-                    <p className="text-xl font-bold">+91 98765 43211</p>
+                    <div className="text-3xl font-extrabold text-[#0B1F4D]">{stat.value}</div>
+                    <div className="text-sm font-semibold text-gray-500 uppercase tracking-wide">{stat.label}</div>
                   </div>
                 </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                    <Mail className="text-[#F8B400]" size={20} />
-                  </div>
-                  <div>
-                    <h5 className="font-semibold text-gray-300 text-sm">Email Address</h5>
-                    <p className="font-medium">info@kartikinstitute.com</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                    <MapPin className="text-[#F8B400]" size={20} />
-                  </div>
-                  <div>
-                    <h5 className="font-semibold text-gray-300 text-sm">Visit Institute</h5>
-                    <p className="font-medium leading-relaxed">123, Technical Hub Area,<br/>Near Metro Station,<br/>New Delhi - 110001</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Form */}
-            <div className="lg:w-3/5 p-10 md:p-16 bg-white/80 backdrop-blur-md">
-              <h3 className="text-2xl font-bold text-[#0B1F4D] mb-8">Request a Free Callback</h3>
-              <form className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                    <input type="text" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0B1F4D] focus:border-transparent transition-all" placeholder="John Doe" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                    <input type="tel" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0B1F4D] focus:border-transparent transition-all" placeholder="+91" />
-                  </div>
-                </div>
-                
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Course</label>
-                    <select className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0B1F4D] focus:border-transparent transition-all text-gray-600">
-                      <option>AC Repairing</option>
-                      <option>PCB Repairing</option>
-                      <option>Washing Machine</option>
-                      <option>Refrigerator</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
-                    <input type="text" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0B1F4D] focus:border-transparent transition-all" placeholder="Your City" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Message (Optional)</label>
-                  <textarea rows="4" className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0B1F4D] focus:border-transparent transition-all" placeholder="How can we help you?"></textarea>
-                </div>
-
-                <button type="button" className="w-full bg-gradient-to-r from-[#0B1F4D] to-blue-900 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg hover:shadow-blue-900/30 transition-all transform hover:-translate-y-0.5">
-                  Submit Application
-                </button>
-              </form>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* FAQ SECTION */}
-      <section className="py-24 bg-white">
-        <div className="container mx-auto px-4 md:px-8 max-w-4xl">
-          <SectionHeading title="Frequently Asked Questions" subtitle="Find answers to common queries before you enroll." />
+      {/* Why Choose Us */}
+      <section id="about" className="pt-32 pb-20 md:pt-40 bg-gray-50 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SectionHeading subtitle="Why Kartik Enterprises" title="Premium Training Experience" />
           
-          <div className="space-y-4">
-            {FAQS.map((faq, idx) => (
-              <div key={idx} className="border border-slate-200 rounded-2xl overflow-hidden transition-all duration-300">
-                <button 
-                  onClick={() => setActiveFaq(activeFaq === idx ? -1 : idx)}
-                  className={`w-full flex items-center justify-between p-6 text-left font-bold text-lg transition-colors ${activeFaq === idx ? 'bg-[#0B1F4D] text-white' : 'bg-slate-50 text-gray-800 hover:bg-slate-100'}`}
-                >
-                  {faq.q}
-                  <ChevronDown className={`transform transition-transform duration-300 ${activeFaq === idx ? 'rotate-180 text-[#F8B400]' : 'text-gray-400'}`} />
-                </button>
-                <AnimatePresence>
-                  {activeFaq === idx && (
-                    <motion.div 
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="bg-white px-6 py-6 border-t border-slate-100"
-                    >
-                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
+            {FEATURES.map((feature, idx) => (
+              <div key={idx} className="bg-white rounded-2xl p-8 shadow-lg shadow-gray-200/50 border border-gray-100 hover:shadow-2xl hover:shadow-blue-900/10 transition-all duration-300 transform hover:-translate-y-2 group">
+                <div className="w-16 h-16 rounded-xl bg-[#0B1F4D]/5 flex items-center justify-center mb-6 group-hover:bg-[#0B1F4D] transition-colors duration-300">
+                  <div className="group-hover:text-white transition-colors duration-300">
+                    {feature.icon}
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-[#0B1F4D] mb-3">{feature.title}</h3>
+                <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0B1F4D] to-blue-900"></div>
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+      {/* Popular Courses */}
+      <section id="courses" className="py-24 bg-[#0B1F4D] relative">
+        {/* Subtle pattern background */}
+        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
         
-        <div className="container mx-auto px-4 md:px-8 relative z-10 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Start Your Professional Career Today</h2>
-          <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">Join thousands of successful students who have built their careers with Kartik Enterprises.</p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button className="bg-[#F8B400] text-[#0B1F4D] px-8 py-4 rounded-xl font-bold text-lg hover:bg-yellow-400 hover:shadow-xl hover:shadow-[#F8B400]/20 transition-all">
-              Apply For Admission
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16">
+            <div className="flex-1">
+              <span className="inline-block py-1 px-3 rounded-full text-xs font-bold tracking-wider uppercase mb-4 border border-[#F8B400] text-[#F8B400]">
+                Master Your Skills
+              </span>
+              <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">Our Premium Courses</h2>
+              <div className="w-24 h-1.5 bg-[#F8B400] mt-6 rounded-full"></div>
+            </div>
+            <button className="mt-6 md:mt-0 text-[#F8B400] font-semibold hover:text-white transition-colors flex items-center gap-2 group">
+              View All Courses <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </button>
-            <button className="bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/20 transition-all flex items-center justify-center gap-2">
-              <Phone size={20} /> Call Counselor
-            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {COURSES.map((course) => (
+              <div key={course.id} className="group bg-white/5 backdrop-blur-sm rounded-3xl overflow-hidden border border-white/10 hover:border-[#F8B400]/50 transition-all duration-500 hover:shadow-[0_0_40px_rgba(248,180,0,0.15)] flex flex-col">
+                <div className="relative h-60 overflow-hidden">
+                  <div className="absolute inset-0 bg-[#0B1F4D]/20 group-hover:bg-transparent transition-colors duration-500 z-10"></div>
+                  <img src={course.img} alt={course.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-in-out" />
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#0B1F4D] z-20 flex items-center gap-1 shadow-lg">
+                    <Clock size={12} /> {course.duration}
+                  </div>
+                </div>
+                <div className="p-8 flex-1 flex flex-col">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 rounded-lg bg-[#F8B400]/20 text-[#F8B400]">
+                      {course.icon}
+                    </div>
+                    <h3 className="text-2xl font-bold text-white group-hover:text-[#F8B400] transition-colors">{course.title}</h3>
+                  </div>
+                  <ul className="space-y-2 mb-8 flex-1 text-gray-300 text-sm">
+                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-green-400" /> 100% Practical Training</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-green-400" /> Real Appliances Practice</li>
+                    <li className="flex items-center gap-2"><CheckCircle2 size={16} className="text-green-400" /> Industry Expert Trainers</li>
+                  </ul>
+                  <div className="flex items-center justify-between mt-auto pt-6 border-t border-white/10">
+                    <div>
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Course Fee</p>
+                      <p className="text-xl font-bold text-[#F8B400]">{course.fee}</p>
+                    </div>
+                    <button className="bg-white/10 hover:bg-[#F8B400] text-white hover:text-[#0B1F4D] w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 border border-white/20 hover:border-transparent transform group-hover:rotate-45">
+                      <ArrowRight size={20} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="bg-gray-900 text-gray-300 py-16 border-t-4 border-[#F8B400]">
-        <div className="container mx-auto px-4 md:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+      {/* Process / Timeline */}
+      <section className="py-24 bg-white overflow-hidden">
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SectionHeading subtitle="Simple Steps" title="Your Journey to Success" />
+            
+            <div className="relative max-w-4xl mx-auto mt-16">
+              {/* Vertical Line */}
+              <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-[#F8B400] via-[#0B1F4D] to-transparent transform md:-translate-x-1/2"></div>
+              
+              {['Counseling', 'Enrollment', 'Practical Training', 'Certification', 'Placement'].map((step, idx) => (
+                <div key={idx} className={`relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group mb-12 last:mb-0 ${idx % 2 !== 0 ? 'md:flex-row' : ''}`}>
+                  
+                  {/* Marker */}
+                  <div className="absolute left-4 md:left-1/2 w-8 h-8 rounded-full bg-white border-4 border-[#F8B400] shadow-[0_0_15px_rgba(248,180,0,0.5)] transform -translate-x-1/2 flex items-center justify-center z-10 group-hover:scale-125 transition-transform duration-300">
+                     <div className="w-2 h-2 bg-[#0B1F4D] rounded-full"></div>
+                  </div>
+
+                  {/* Content Box */}
+                  <div className="ml-12 md:ml-0 md:w-5/12 w-full">
+                    <div className="bg-gray-50 p-6 rounded-2xl shadow-sm border border-gray-100 group-hover:shadow-xl group-hover:border-[#0B1F4D]/10 transition-all duration-300">
+                      <div className="text-4xl font-black text-gray-100 absolute -top-4 -right-4 z-0 pointer-events-none group-hover:text-gray-200 transition-colors">0{idx+1}</div>
+                      <h4 className="text-xl font-bold text-[#0B1F4D] relative z-10">{step}</h4>
+                      <p className="text-gray-500 mt-2 text-sm relative z-10">Detailed structured process ensuring complete understanding and practical application before moving to the next stage.</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+         </div>
+      </section>
+
+      {/* Gallery */}
+      <section id="gallery" className="py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <SectionHeading subtitle="Inside The Institute" title="State-of-the-Art Workshop" />
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mt-12">
+            {GALLERY.map((img, idx) => (
+              <div key={idx} className={`relative group rounded-2xl overflow-hidden cursor-pointer ${idx === 0 || idx === 3 ? 'md:col-span-2 md:row-span-2' : ''}`}>
+                <div className="absolute inset-0 bg-[#0B1F4D]/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex items-center justify-center">
+                  <div className="bg-white/20 backdrop-blur-md w-12 h-12 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-transform duration-300 delay-100 text-white">
+                    <Search size={20} />
+                  </div>
+                </div>
+                <img 
+                  src={img} 
+                  alt={`Gallery ${idx + 1}`} 
+                  className="w-full h-full object-cover aspect-video md:aspect-auto transform group-hover:scale-105 transition-transform duration-500"
+                  style={{ minHeight: idx === 0 || idx === 3 ? '400px' : '200px' }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Placements & Testimonials */}
+      <section id="placement" className="py-24 bg-[#0B1F4D] relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            
+            {/* Left: Placement Info */}
+            <div>
+              <span className="inline-block py-1 px-3 rounded-full text-xs font-bold tracking-wider uppercase mb-4 border border-[#F8B400] text-[#F8B400]">
+                Success Stories
+              </span>
+              <h2 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-6">Start Your Career With Top Brands</h2>
+              <p className="text-gray-300 text-lg mb-10 leading-relaxed">
+                Our dedicated placement cell ensures that every deserving student gets an opportunity to interview with leading appliance manufacturers and service centers across India.
+              </p>
+              
+              <div className="grid grid-cols-2 gap-6 mb-10">
+                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                  <div className="text-4xl font-black text-[#F8B400] mb-2">100%</div>
+                  <div className="text-sm text-gray-300 font-medium">Placement Assistance</div>
+                </div>
+                <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+                  <div className="text-4xl font-black text-[#F8B400] mb-2">₹3.5L</div>
+                  <div className="text-sm text-gray-300 font-medium">Average Starting Package</div>
+                </div>
+              </div>
+
+              {/* Mock Logos */}
+              <div className="flex flex-wrap gap-6 opacity-70">
+                <div className="h-10 px-4 bg-white/10 rounded flex items-center justify-center font-bold text-white tracking-widest uppercase text-sm">Samsung</div>
+                <div className="h-10 px-4 bg-white/10 rounded flex items-center justify-center font-bold text-white tracking-widest uppercase text-sm">LG</div>
+                <div className="h-10 px-4 bg-white/10 rounded flex items-center justify-center font-bold text-white tracking-widest uppercase text-sm">Whirlpool</div>
+                <div className="h-10 px-4 bg-white/10 rounded flex items-center justify-center font-bold text-white tracking-widest uppercase text-sm">Voltas</div>
+              </div>
+            </div>
+
+            {/* Right: Testimonial Slider (Custom built for single file reliability) */}
+            <div className="relative">
+              <div className="absolute -inset-4 bg-[#F8B400]/10 rounded-[3rem] transform -rotate-3 filter blur-xl"></div>
+              <div className="relative bg-white rounded-3xl p-8 md:p-12 shadow-2xl shadow-black/50 border border-gray-100">
+                <Quote size={48} className="text-gray-100 absolute top-8 right-8" />
+                
+                <div className="relative h-64 md:h-56">
+                  {TESTIMONIALS.map((test, idx) => (
+                    <div 
+                      key={test.id} 
+                      className={`absolute top-0 left-0 w-full transition-all duration-700 ease-in-out ${idx === activeTestimonial ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8 pointer-events-none'}`}
+                    >
+                      <div className="flex gap-1 text-[#F8B400] mb-6">
+                        {[...Array(5)].map((_, i) => <Star key={i} size={18} fill="currentColor" />)}
+                      </div>
+                      <p className="text-lg md:text-xl text-gray-700 font-medium leading-relaxed mb-8 italic">
+                        "{test.text}"
+                      </p>
+                      <div className="flex items-center gap-4">
+                        <img src={test.img} alt={test.name} className="w-14 h-14 rounded-full object-cover border-2 border-[#0B1F4D]" />
+                        <div>
+                          <h4 className="font-bold text-[#0B1F4D]">{test.name}</h4>
+                          <p className="text-sm text-gray-500 font-medium">{test.role}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Controls */}
+                <div className="flex gap-2 mt-8">
+                  {TESTIMONIALS.map((_, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={() => setActiveTestimonial(idx)}
+                      className={`h-2 rounded-full transition-all duration-300 ${idx === activeTestimonial ? 'w-8 bg-[#0B1F4D]' : 'w-2 bg-gray-300 hover:bg-gray-400'}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* Admission / Contact Section */}
+      <section id="contact" className="py-24 bg-gray-50 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16">
+            
+            {/* Form */}
+            <div className="bg-white rounded-3xl p-8 md:p-10 shadow-xl shadow-blue-900/5 border border-gray-100 relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-[#F8B400]/10 rounded-bl-full -z-0"></div>
+               <div className="relative z-10">
+                  <h3 className="text-3xl font-extrabold text-[#0B1F4D] mb-2">Apply for Admission</h3>
+                  <p className="text-gray-500 mb-8">Fill out the form below and our counselor will call you.</p>
+                  
+                  <form onSubmit={(e) => e.preventDefault()} className="space-y-5">
+                    <div className="grid grid-cols-2 gap-5">
+                      <div className="space-y-1">
+                        <label className="text-sm font-semibold text-gray-700">First Name</label>
+                        <input type="text" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-[#0B1F4D] focus:border-transparent outline-none transition-all" placeholder="John" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-sm font-semibold text-gray-700">Last Name</label>
+                        <input type="text" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-[#0B1F4D] focus:border-transparent outline-none transition-all" placeholder="Doe" />
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-semibold text-gray-700">Phone Number</label>
+                      <input type="tel" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-[#0B1F4D] focus:border-transparent outline-none transition-all" placeholder="+91 98765 43210" />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-sm font-semibold text-gray-700">Select Course</label>
+                      <select className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-[#0B1F4D] focus:border-transparent outline-none transition-all text-gray-600">
+                        <option>Advanced AC Repairing</option>
+                        <option>Refrigerator Expert</option>
+                        <option>Washing Machine Master</option>
+                        <option>PCB Repairing</option>
+                      </select>
+                    </div>
+                    <button className="w-full bg-[#0B1F4D] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#071533] shadow-lg shadow-[#0B1F4D]/20 transition-all duration-300 transform hover:-translate-y-1 mt-4">
+                      Submit Application
+                    </button>
+                  </form>
+               </div>
+            </div>
+
+            {/* FAQs */}
+            <div>
+              <h3 className="text-3xl font-extrabold text-[#0B1F4D] mb-8">Frequently Asked Questions</h3>
+              <div className="space-y-4">
+                {FAQS.map((faq, idx) => (
+                  <div key={idx} className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <button 
+                      onClick={() => setOpenFaq(openFaq === idx ? -1 : idx)}
+                      className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none"
+                    >
+                      <span className="font-bold text-[#0B1F4D] pr-4">{faq.q}</span>
+                      <ChevronDown size={20} className={`text-[#F8B400] transform transition-transform duration-300 flex-shrink-0 ${openFaq === idx ? 'rotate-180' : ''}`} />
+                    </button>
+                    <div 
+                      className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${openFaq === idx ? 'max-h-48 pb-5 opacity-100' : 'max-h-0 opacity-0'}`}
+                    >
+                      <p className="text-gray-600 text-sm">{faq.a}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Direct Contact Info Card */}
+              <div className="mt-10 bg-[#0B1F4D] rounded-2xl p-6 md:p-8 flex flex-col sm:flex-row items-center gap-6 justify-between text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#F8B400] rounded-bl-full opacity-10 pointer-events-none"></div>
+                <div>
+                  <h4 className="text-lg font-bold mb-1">Need immediate help?</h4>
+                  <p className="text-gray-300 text-sm">Call our admission helpline now.</p>
+                </div>
+                <a href="tel:+919876543210" className="bg-[#F8B400] text-[#0B1F4D] px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-white transition-colors shrink-0 whitespace-nowrap shadow-lg">
+                  <Phone size={20} /> +91 98765 43210
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-[#051024] text-white pt-20 pb-10 border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
             
             {/* Brand */}
-            <div>
-              <div className="flex items-center gap-2 mb-6">
-                <div className="w-8 h-8 rounded bg-[#0B1F4D] flex items-center justify-center">
-                  <Wrench className="text-[#F8B400] w-5 h-5" />
+            <div className="lg:col-span-1">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-[#F8B400] flex items-center justify-center">
+                  <Wrench size={24} className="text-[#0B1F4D]" />
                 </div>
-                <span className="font-bold text-xl text-white">Kartik Enterprises</span>
+                <div>
+                  <h2 className="text-xl font-bold tracking-tight leading-tight">KARTIK</h2>
+                  <p className="text-[10px] text-[#F8B400] font-semibold tracking-widest uppercase">Enterprises & Institute</p>
+                </div>
               </div>
-              <p className="text-gray-400 mb-6 text-sm leading-relaxed">
-                Empowering youth with professional technical skills for a brighter, secure future. India's trusted name in technical education.
+              <p className="text-gray-400 text-sm leading-relaxed mb-6">
+                India's premier institute for practical appliance repair training. Building careers and creating entrepreneurs since 2010.
               </p>
+              <div className="flex gap-4">
+                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-[#F8B400] hover:text-[#0B1F4D] transition-colors"><FacebookIcon size={18} /></a>
+                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-[#F8B400] hover:text-[#0B1F4D] transition-colors"><TwitterIcon size={18} /></a>
+                <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:bg-[#F8B400] hover:text-[#0B1F4D] transition-colors"><InstagramIcon size={18} /></a>
+              </div>
             </div>
 
-            {/* Links */}
+            {/* Quick Links */}
             <div>
-              <h4 className="text-white font-bold mb-6 text-lg">Quick Links</h4>
-              <ul className="space-y-3 text-sm">
-                {['Home', 'About Institute', 'Our Courses', 'Placements', 'Gallery', 'Contact Us'].map(link => (
-                  <li key={link}><a href="#" className="hover:text-[#F8B400] transition-colors flex items-center gap-2"><ChevronRight size={14} /> {link}</a></li>
+              <h4 className="text-lg font-bold mb-6 text-white border-b border-white/10 pb-2 inline-block">Quick Links</h4>
+              <ul className="space-y-3">
+                {['About Institute', 'All Courses', 'Placement Record', 'Student Gallery', 'Contact Us'].map((link, i) => (
+                  <li key={i}>
+                    <a href="#" className="text-gray-400 hover:text-[#F8B400] transition-colors flex items-center gap-2 text-sm">
+                      <ChevronRight size={14} /> {link}
+                    </a>
+                  </li>
                 ))}
               </ul>
             </div>
 
             {/* Courses */}
             <div>
-              <h4 className="text-white font-bold mb-6 text-lg">Popular Courses</h4>
-              <ul className="space-y-3 text-sm">
-                {['AC Repairing', 'PCB Designing', 'Washing Machine', 'Refrigerator', 'Microwave Oven'].map(link => (
-                  <li key={link}><a href="#" className="hover:text-[#F8B400] transition-colors flex items-center gap-2"><ChevronRight size={14} /> {link}</a></li>
+              <h4 className="text-lg font-bold mb-6 text-white border-b border-white/10 pb-2 inline-block">Top Courses</h4>
+              <ul className="space-y-3">
+                {['AC Repairing Course', 'Refrigerator Repair', 'Washing Machine', 'Microwave Oven', 'PCB Repairing'].map((link, i) => (
+                  <li key={i}>
+                    <a href="#" className="text-gray-400 hover:text-[#F8B400] transition-colors flex items-center gap-2 text-sm">
+                      <ChevronRight size={14} /> {link}
+                    </a>
+                  </li>
                 ))}
               </ul>
             </div>
 
             {/* Contact */}
             <div>
-              <h4 className="text-white font-bold mb-6 text-lg">Contact Info</h4>
-              <ul className="space-y-4 text-sm text-gray-400">
+              <h4 className="text-lg font-bold mb-6 text-white border-b border-white/10 pb-2 inline-block">Contact Info</h4>
+              <ul className="space-y-4">
                 <li className="flex items-start gap-3">
-                  <MapPin className="text-[#F8B400] shrink-0" size={18} />
-                  <span>123, Technical Hub Area, Near Metro Station, New Delhi - 110001</span>
+                  <MapPin size={20} className="text-[#F8B400] shrink-0 mt-1" />
+                  <span className="text-gray-400 text-sm leading-relaxed">123, Tech Plaza, Near Metro Station, New Delhi, 110001</span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <Phone className="text-[#F8B400] shrink-0" size={18} />
-                  <span>+91 98765 43210</span>
+                  <Phone size={20} className="text-[#F8B400] shrink-0" />
+                  <a href="tel:+919876543210" className="text-gray-400 hover:text-[#F8B400] text-sm">+91 98765 43210</a>
                 </li>
                 <li className="flex items-center gap-3">
-                  <Mail className="text-[#F8B400] shrink-0" size={18} />
-                  <span>info@kartikinstitute.com</span>
+                  <Mail size={20} className="text-[#F8B400] shrink-0" />
+                  <a href="mailto:info@kartikinstitute.com" className="text-gray-400 hover:text-[#F8B400] text-sm">info@kartikinstitute.com</a>
                 </li>
               </ul>
             </div>
-          </div>
 
-          <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-            <p>&copy; {new Date().getFullYear()} Kartik Enterprises Repair & Institute. All rights reserved.</p>
-            <div className="flex gap-4">
+          </div>
+          
+          <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-gray-500 text-sm">
+              © {new Date().getFullYear()} Kartik Enterprises & Institute. All rights reserved.
+            </p>
+            <div className="flex gap-6 text-sm text-gray-500">
               <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
               <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
             </div>
@@ -701,16 +616,70 @@ export default function App() {
         </div>
       </footer>
 
-      {/* FLOATING ACTION BUTTONS */}
-      <div className="fixed bottom-6 right-6 flex flex-col gap-4 z-50">
-        <a href="tel:+919876543210" className="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform">
-          <Phone size={24} />
-        </a>
-        <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" className="w-14 h-14 bg-green-500 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform">
-          <MessageSquare size={24} />
+      {/* Floating Action Buttons */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3">
+        {scrolled && (
+          <button 
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="w-12 h-12 rounded-full bg-white text-[#0B1F4D] shadow-xl flex items-center justify-center hover:bg-gray-100 transition-all transform hover:-translate-y-1 opacity-0 animate-[fadeIn_0.3s_ease-out_forwards]"
+            style={{ animationFillMode: 'forwards' }}
+          >
+            <ChevronDown size={24} className="rotate-180" />
+          </button>
+        )}
+        <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" className="w-14 h-14 rounded-full bg-[#25D366] text-white shadow-[0_0_20px_rgba(37,211,102,0.4)] flex items-center justify-center hover:bg-[#1EBE5D] transition-all transform hover:-translate-y-1 hover:scale-110">
+          <MessageCircle size={28} />
         </a>
       </div>
 
+      {/* Helper component for magnifying glass icon in gallery */}
+      <Search className="hidden" /> 
     </div>
+  );
+}
+
+function Search(props) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
+  )
+}
+
+function FacebookIcon(props) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+    </svg>
+  );
+}
+
+function TwitterIcon(props) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/>
+    </svg>
+  );
+}
+
+function InstagramIcon(props) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width={props.size || 24} height={props.size || 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+    </svg>
   );
 }
